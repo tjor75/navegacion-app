@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Button, TextInput, Text, View, StyleSheet, TouchableOpacity } from 'react-native';
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
+import { NavigationContainer, useNavigation, useRoute, usePreventRemove } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 
 
 import { Ionicons } from '@expo/vector-icons';
@@ -11,59 +11,84 @@ import { Ionicons } from '@expo/vector-icons';
 //
 // Screens del Primer Stack
 //
-function ScreenA1() {
+function HomeScreen() {
   const navigation = useNavigation();
   return (
-    <View style={styles.homeScreen}>
+    <View style={styles.homeStackScreens}>
       <Text style={styles.text}>HOME</Text>
+      <Button title="Ver algo" onPress={() => navigation.navigate('Cool')} />
+    </View>
+  );
+}
+function CoolScreen() {
+  return (
+    <View style={styles.homeStackScreens}>
+      <Text style={styles.text}>Esta pantalla es <Text style={styles.cool}>cool</Text></Text>
     </View>
   );
 }
 
 
-function ScreenA2() {
+// Screens del Segundo Stack
+function SearchScreen() {
   const navigation = useNavigation();
   return (
-    <View style={styles.homeScreen}>
-      <Text style={styles.text}>HOME 2</Text>
+    <View style={styles.searchStackScreens}>
+      <Text>Shh... No me molestes, estoy buscando algo</Text>
+      <Button title="Molestar igual" onPress={() => navigation.navigate('SearchQuery')} />
     </View>
   );
 }
-
-
-// Screens del Primer Stack
-function ScreenB1() {
-  const navigation = useNavigation();
+function SearchQueryScreen() {
+  usePreventRemove();
   return (
-    <View style={styles.homeScreen}>
-      <Text style={styles.text}>HOME</Text>
-    </View>
-  );
-}
-function ScreenB2() {
-  const navigation = useNavigation();
-  return (
-    <View style={styles.homeScreen}>
-      <Text style={styles.text}>HOME</Text>
+    <View style={styles.searchStackScreens}>
+      <Text style={styles.text}>( ｡ •`ᴖ´• ｡)</Text>
     </View>
   );
 }
 
 
 // Screens del Tercer Stack
-function ScreenC1() {
+function LoginScreen() {
   const navigation = useNavigation();
+  const [username, setUsername] = React.useState();
+  const [contrasenia, setContrasenia] = React.useState();
   return (
-    <View style={styles.homeScreen}>
-      <Text style={styles.text}>HOME</Text>
+    <View style={styles.profileStackScreens}>
+      <TextInput value={username} onChangeText={setUsername} placeholder="Username" />
+      <TextInput value={contrasenia} onChangeText={setContrasenia} placeholder="Contraseña" />
+      <Button title="Login" onPress={() => navigation.navigate('Profile', {username: username})} />
     </View>
   );
 }
-function ScreenC2() {
+function ProfileScreen() {
+  const route = useRoute();
   const navigation = useNavigation();
   return (
-    <View style={styles.homeScreen}>
-      <Text style={styles.text}>HOME</Text>
+    <View style={styles.profileStackScreens}>
+      <Text style={styles.text}>{route.params.username}</Text>
+      <Button title="Volver" onPress={() => navigation.goBack()} />
+    </View>
+  );
+}
+
+
+// Screens del Cuarto Stack
+function SettingsScreen() {
+  const navigation = useNavigation();
+  return (
+    <View style={styles.settingsStackScreens}>
+      <Text style={styles.text}>Settings</Text>
+      <Button title="ROCK BUTTON!" onPress={() => navigation.navigate('RockScreen')} />
+    </View>
+  );
+}
+function RockScreen() {
+  const navigation = useNavigation();
+  return (
+    <View style={styles.settingsStackScreens}>
+      <Text style={styles.text}>HOME 2</Text>
     </View>
   );
 }
@@ -72,34 +97,44 @@ function ScreenC2() {
 //
 // Creación de los stacks
 //
-const StackA = createNativeStackNavigator();
-const StackB = createNativeStackNavigator();
-const StackC = createNativeStackNavigator();
+const HomeStack = createStackNavigator();
+const ProfileStack = createStackNavigator();
+const SettingsStack = createStackNavigator();
+const SearchStack = createStackNavigator();
 
-function StackANavigator() {
+function HomeNavigator() {
   return (
-    <StackA.Navigator>
-      <StackA.Screen name="ScreenA1" component={ScreenA1} />
-      <StackA.Screen name="ScreenA2" component={ScreenA2} />
-    </StackA.Navigator>
+    <HomeStack.Navigator>
+      <HomeStack.Screen name="Home" component={HomeScreen} />
+      <HomeStack.Screen name="Cool" component={CoolScreen} />
+    </HomeStack.Navigator>
   );
 }
 
-
-function StackBNavigator() {
+function SearchNavigator() {
   return (
-    <StackB.Navigator>
-      <StackB.Screen name="ScreenB1" component={ScreenB1} />
-      <StackB.Screen name="ScreenB2" component={ScreenB2} />
-    </StackB.Navigator>
+    <SearchStack.Navigator>
+      <SearchStack.Screen name="Search" component={SearchScreen} />
+      <SearchStack.Screen name="SearchQuery" component={SearchQueryScreen} />
+    </SearchStack.Navigator>
   );
 }
-function StackCNavigator() {
+
+function ProfileNavigator() {
   return (
-    <StackC.Navigator>
-      <StackC.Screen name="ScreenC1" component={ScreenC1} />
-      <StackC.Screen name="ScreenC2" component={ScreenC2} />
-    </StackC.Navigator>
+    <ProfileStack.Navigator>
+      <ProfileStack.Screen name="Login" component={LoginScreen} />
+      <ProfileStack.Screen name="Profile" component={ProfileScreen} />
+    </ProfileStack.Navigator>
+  );
+}
+
+function SettingsNavigator() {
+  return (
+    <SettingsStack.Navigator>
+      <SettingsStack.Screen name="Settings" component={SettingsScreen} />
+      <SettingsStack.Screen name="Rock" component={RockScreen} />
+    </SettingsStack.Navigator>
   );
 }
 
@@ -111,12 +146,30 @@ const Tab = createBottomTabNavigator();
 function MyTabs() {
   return (
     <Tab.Navigator>
-      <Tab.Screen name="Home"     component={StackANavigator} />
-      <Tab.Screen name="Buscador" component={StackBNavigator} />
-      <Tab.Screen name="Perfil"   component={StackCNavigator}
+      <Tab.Screen name="Home"     component={HomeNavigator}
+        options={{
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="home" size={24} color={color} />
+           ),
+        }} />
+        <Tab.Screen name="Search"   component={SearchNavigator}
+        options={{
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="search" size={24} color={color} />
+           ),
+        }}
+      />
+      <Tab.Screen name="Perfil"   component={ProfileNavigator}
         options={{
           tabBarIcon: ({ color }) => (
             <Ionicons name="person" size={24} color={color} />
+           ),
+        }}
+      />
+      <Tab.Screen name="Settings"   component={SettingsNavigator}
+        options={{
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="settings" size={24} color={color} />
            ),
         }}
       />
@@ -146,10 +199,27 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
   },
-  homeScreen: {
+  homeStackScreens: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor:'#ff0000'
+  },
+  cool: {
+    fontStyle: 'italic',
+    fontWeight: 'bold'
+  },
+  searchStackScreens: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'blue'
+  },
+  profileStackScreens: {
+    flex: 1,
+    backgroundColor: 'green'
+  },
+  settingsStackScreens: {
+    flex: 1,
   }
 });

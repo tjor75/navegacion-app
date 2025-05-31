@@ -192,7 +192,7 @@ function MyTabs() {
       />
       <Tab.Screen name="SettingsTab" component={SettingsNavigator}
         options={{
-          tarBarLabel: "Settings",
+          tabBarLabel: "Settings",
           tabBarIcon: ({ color }) => (
             <Ionicons name="settings" size={24} color={color} />
            ),
